@@ -1,65 +1,24 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
+	"todoapp/db"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/gin-gonic/gin"
 )
 
-type Article struct {
-	Name  string
-	Phone string
-}
-
-func dbConnect() {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-
-	// Connect to MongoDB
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Connected to MongoDB!")
-
-	// collection := client.Database("test").Collection("trainers")
-
-}
-
 func main() {
-	//	route()
-	dbConnect()
-	routes()
 
-}
+	router := gin.Default()
 
-// Function to call when end point request
-func homePage(w http.ResponseWriter, r *http.Request) {
+	database, err := db.ConnectDB()
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	// var article Article
-	u, res := json.Marshal(Article{Name: "hello", Phone: "welcome"})
-	fmt.Println(res)
-	fmt.Println(u)
-	w.Write(u)
+	handler := db.NewDBHandler(database)
+	fmt.Println(handler)
 
-}
+	router.Run()
 
-func routes() {
-	// adding routes using http pacakge
-	http.HandleFunc("/", homePage)
-	// Start server listening on port 8080
-	log.Fatal(http.ListenAndServe(":8080", nil))
 }
